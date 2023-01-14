@@ -20,8 +20,10 @@ def get_args():
                         help='shape of each input data')
     parser.add_argument('--batch_size', default=128, type=int,
                         help='model fitting batch size')
-    parser.add_argument('--epochs', default=100, type=int,
+    parser.add_argument('--epochs', default=2, type=int,
                         help='model fitting epoch')
+    parser.add_argument('--subsample', default=None, type=int,
+                        help='subsample dataset for local processing')
 
     args = parser.parse_args()
     args.data_dir = os.path.abspath(args.data_dir)
@@ -29,7 +31,7 @@ def get_args():
     return args
 
 
-def load_data(data_dir: str) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+def load_data(data_dir: str, subsample=None) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
     train_x = np.load(os.path.join(data_dir, "train_x.npy"))
     train_y = np.load(os.path.join(data_dir, "train_y.npy"))
     valid_x = np.load(os.path.join(data_dir, "valid_x.npy"))
@@ -41,22 +43,37 @@ def load_data(data_dir: str) -> Tuple[Tuple[np.ndarray, np.ndarray], Tuple[np.nd
     train_x, train_y = np.array(train_x, np.float32), np.array(train_y, np.int64)
     valid_x, valid_y = np.array(valid_x, np.float32), np.array(valid_y, np.int64)
 
+    if subsample:
+        len_train, len_valid = len(train_x), len(valid_x)
+        idx_train = (np.arange(len_train) % subsample) == 0
+        idx_valid = (np.arange(len_valid) % subsample) == 0
+        train_x, train_y = train_x[idx_train], train_y[idx_train]
+        valid_x, valid_y = valid_x[idx_valid], valid_y[idx_valid]
+
     print("Load data:\n\ttrain: x {}, y {}\n\tvalid: x {}, y {}".format(
         train_x.shape, train_y.shape, valid_x.shape, valid_y.shape
         ))
+
     return (train_x, train_y), (valid_x, valid_y)
 
 
-def load_data_test(data_dir: str) -> Tuple[np.ndarray, np.ndarray]:
+def load_data_test(data_dir: str, subsample=None) -> Tuple[np.ndarray, np.ndarray]:
     test_x = np.load(os.path.join(data_dir, "test_x.npy"))
     test_y = np.load(os.path.join(data_dir, "test_y.npy"))
 
     test_y = utils.to_categorical(test_y, 4)
 
     test_x, test_y = np.array(test_x).astype(np.float32), np.array(test_y).astype(np.int64)
-    print("Load data:\n\ttrain: x {}, y {}".format(
+
+    if subsample:
+        len_test = len(test_x)
+        idx_test = (np.arange(len_test) % subsample) == 0
+        test_x, test_y = test_x[idx_test], test_y[idx_test]
+
+    print("Load data:\n\ttest: x {}, y {}".format(
         test_x.shape, test_y.shape
         ))
+
     return test_x, test_y
 
 
@@ -89,11 +106,14 @@ if __name__ == "__main__":
     model = get_model(args.data_shape, data_aug_layer)
     model.summary()
 
-    (x_train, y_train), (x_test, y_test) = load_data(args.data_dir)
+    (x_train, y_train), (x_valid, y_valid) = load_data(args.data_dir, args.subsample)
 
     model.compile(
             optimizer=optimizers.RMSprop(1e-3),
-            loss=losses.CategoricalCrossentropy(from_logits=True),
+            loss=losses.CategoricalCrossentropy(from_logits=False),
             metrics=["acc"]
             )
-    model.fit(x_train, y_train, batch_size=args.batch_size, epochs=args.epochs, validation_data=(x_test, y_test))
+    model.fit(x_train, y_train, batch_size=args.batch_size, epochs=args.epochs, validation_data=(x_valid, y_valid))
+
+    x_test, y_test = load_data_test(args.data_dir, args.subsample)
+    model.evaluate(x_test, y_test)
