@@ -24,6 +24,9 @@ def get_args():
                         help='backbones [mobilenet, resnet50]')
     parser.add_argument('--subsample', default=None, type=int,
                         help='subsample dataset for local processing')
+    parser.add_argument('--workers', default=1, type=int,
+                        help='number of workers doing predict')
+    args = parser.parse_args()
     args = parser.parse_args()
 
     return args
@@ -68,7 +71,7 @@ if __name__ == "__main__":
 
     feature_model = Model(base_model.layers[0].input, base_model.layers[0].output)
 
-    out_img = feature_model.predict(x_test[:10])
+    out_img = feature_model.predict(x_test[:10], workers=args.workers)
     for img in out_img:
         print(img.shape, np.max(img))
-
+    np.save("log/cifar_model_pred_feature.npy", out_img)

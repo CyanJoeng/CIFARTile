@@ -25,10 +25,10 @@ def get_model_cifar10_class(in_shape, backbone=0, pretrain=False, classes=10, da
     def pre_process(height, width, deconvs=2):
         def _block(id):
             return Sequential([
-                layers.Conv2D(3, 3, padding='same', activation='relu'),
-                layers.BatchNormalization(),
-                layers.Conv2D(6, 3, padding='same', activation='relu'),
-                layers.BatchNormalization(),
+                # layers.Conv2D(3, 3, padding='same', activation='relu'),
+                # layers.BatchNormalization(),
+                # layers.Conv2D(6, 3, padding='same', activation='relu'),
+                # layers.BatchNormalization(),
                 layers.Conv2DTranspose(3, 3, strides=2, padding='same', activation='relu'),
                 layers.BatchNormalization()
             ], name='fit_block{}'.format(id))
@@ -41,7 +41,7 @@ def get_model_cifar10_class(in_shape, backbone=0, pretrain=False, classes=10, da
         return Sequential([
             layers.GlobalAvgPool2D(),
             layers.Dense(100, activation='relu'),
-            layers.Dropout(0.2),
+            layers.Dropout(0.5),
             layers.Dense(10, activation='softmax'),
             ], name='top')
 

@@ -4,8 +4,6 @@ from typing import Tuple
 
 from keras import utils
 
-import matplotlib.pyplot as plt
-
 
 def subsample_dataset(data_list, subsample):
     def sample(data):

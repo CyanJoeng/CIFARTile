@@ -55,6 +55,7 @@ if __name__ == "__main__":
         tpu_strategy = tf.distribute.TPUStrategy(tpu)
 
     (x_train, y_train), (x_valid, y_valid) = load_data(args.data_dir, args.subsample)
+    print("CIFARTile data value range ", x_train.max())
 
     def _model():
         model = get_model_tile(args.data_shape, args.cifar_weight, args.backbone)
