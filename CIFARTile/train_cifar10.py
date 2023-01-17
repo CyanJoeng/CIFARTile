@@ -1,8 +1,7 @@
 from create_models import get_model_cifar10_class
-from dataset import subsample_dataset
-from keras import datasets, optimizers, losses, callbacks, metrics
+from dataset import load_cifar10
+from keras import optimizers, losses, callbacks, metrics
 import argparse
-import numpy as np
 
 
 def get_args():
@@ -27,23 +26,10 @@ def get_args():
     return args
 
 
-IMG_SIZE = 224
-
 if __name__ == "__main__":
     args = get_args()
 
-    (x_train, y_train), (x_valid, y_valid) = datasets.cifar10.load_data()
-    if args.subsample:
-        x_train, y_train, x_valid, y_valid = subsample_dataset([x_train, y_train, x_valid, y_valid], args.subsample)
-
-    test_idx = (np.arange(len(y_train)) % 5) == 0
-    train_idx = (np.arange(len(y_train)) % 5) != 0
-
-    x_test, y_test = x_train[test_idx], y_train[test_idx]
-    x_train, y_train = x_train[train_idx], y_train[train_idx]
-    print("x_shape {}, y_shape {}".format(x_train.shape, y_train.shape))
-    print("        {},         {}".format(x_valid.shape, y_valid.shape))
-    print("        {},         {}".format(x_test.shape, y_test.shape))
+    (x_train, y_train), (x_valid, y_valid), (x_test, y_test) = load_cifar10()
 
     model = get_model_cifar10_class(x_train.shape[1:], backbone=args.backbone)
 
@@ -54,16 +40,19 @@ if __name__ == "__main__":
         model.load_weights(args.checkpoint_file)
         print("Load weights {} ...".format(args.checkpoint_file))
 
+    log_file_name = '{}.training.log'.format(args.checkpoint_file)
+    checkpoint_file_name = args.checkpoint_file_name
+    if not checkpoint_file_name.endswith('.hdf5'):
+        checkpoint_file_name = checkpoint_file_name + '.hdf5'
+
     model_checkpoint_callback = callbacks.ModelCheckpoint(
-            filepath=args.checkpoint_file
-            if args.checkpoint_file.endswith('.hdf5') else
-            args.checkpoint_file + '.hdf5',
+            filepath=checkpoint_file_name,
             save_weights_only=True,
             monitor='val_accuracy',
             mode='max',
             save_best_only=True)
 
-    csv_logger = callbacks.CSVLogger('training_cifar10.log')
+    csv_logger = callbacks.CSVLogger(log_file_name)
 
     model.compile(
             optimizer=optimizers.Adam(args.lr),

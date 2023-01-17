@@ -4,7 +4,7 @@ from keras import layers, applications
 
 
 def get_model_cifar10_class(in_shape, backbone=0, pretrain=False, classes=10, data_aug=None,
-                            backbone_in_shape=(224, 224, 3)) -> Model:
+                            backbone_in_shape=(224, 224, 3), deeper_fit_to=False) -> Model:
 
     backbones = [
             applications.MobileNet,
@@ -24,14 +24,20 @@ def get_model_cifar10_class(in_shape, backbone=0, pretrain=False, classes=10, da
 
     def pre_process(height, width, deconvs=2):
         def _block(id):
-            return Sequential([
-                # layers.Conv2D(3, 3, padding='same', activation='relu'),
-                # layers.BatchNormalization(),
-                # layers.Conv2D(6, 3, padding='same', activation='relu'),
-                # layers.BatchNormalization(),
-                layers.Conv2DTranspose(3, 3, strides=2, padding='same', activation='relu'),
-                layers.BatchNormalization()
-            ], name='fit_block{}'.format(id))
+            deep = [
+                    layers.Conv2D(3, 3, padding='same', activation='relu'),
+                    layers.BatchNormalization(),
+                    layers.Conv2D(6, 3, padding='same', activation='relu'),
+                    layers.BatchNormalization(),
+                    layers.Conv2DTranspose(3, 3, strides=2, padding='same', activation='relu'),
+                    layers.BatchNormalization()
+                    ]
+            shallow = [
+                    layers.Conv2DTranspose(3, 3, strides=2, padding='same', activation='relu'),
+                    layers.BatchNormalization()
+                    ]
+
+            return Sequential(deep if deeper_fit_to else shallow, name='fit_block{}'.format(id))
 
         return Sequential([_block(id) for id in range(deconvs)] + [
             layers.Resizing(height, width, interpolation="nearest")

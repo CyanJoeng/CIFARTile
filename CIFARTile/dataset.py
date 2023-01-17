@@ -1,8 +1,8 @@
-import numpy as np
 import os
+import numpy as np
 from typing import Tuple
 
-from keras import utils
+from keras import utils, datasets
 
 
 def subsample_dataset(data_list, subsample):
@@ -66,3 +66,21 @@ def load_data_test(data_dir: str, subsample=None) -> Tuple[np.ndarray, np.ndarra
         ))
 
     return test_x, test_y
+
+
+def load_cifar10(subsample=None):
+    (x_train, y_train), (x_valid, y_valid) = datasets.cifar10.load_data()
+
+    if subsample:
+        x_train, y_train, x_valid, y_valid = subsample_dataset([x_train, y_train, x_valid, y_valid], subsample)
+
+    test_idx = (np.arange(len(y_train)) % 5) == 0
+    train_idx = (np.arange(len(y_train)) % 5) != 0
+
+    x_test, y_test = x_train[test_idx], y_train[test_idx]
+    x_train, y_train = x_train[train_idx], y_train[train_idx]
+    print("x_shape {}, y_shape {}".format(x_train.shape, y_train.shape))
+    print("        {},         {}".format(x_valid.shape, y_valid.shape))
+    print("        {},         {}".format(x_test.shape, y_test.shape))
+
+    return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
