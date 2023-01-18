@@ -2,7 +2,7 @@ import os
 import numpy as np
 from typing import Tuple
 
-from keras import utils, datasets
+from tensorflow.keras import utils, datasets
 
 
 def subsample_dataset(data_list, subsample):

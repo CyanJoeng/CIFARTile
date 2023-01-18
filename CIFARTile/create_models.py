@@ -1,4 +1,3 @@
-from resnet import ResNetEqualFeatureMap, ResNet18
 from keras import Input, Model, Sequential
 from keras import layers, applications
 
@@ -59,12 +58,13 @@ def get_model_cifar10_class(in_shape, backbone=0, pretrain=False, classes=10, da
         ])
 
 
-def get_model_tile(in_shape: tuple, weight_path: str, backbone=0) -> Model:
+def get_model_tile(in_shape: tuple, weight_backbone=None, backbone=0) -> Model:
 
     backbone_in_shape = (224 * 2, 224 * 2, 3)
     base_model = get_model_cifar10_class(in_shape, backbone=backbone, backbone_in_shape=backbone_in_shape)
-    base_model.load_weights(weight_path)
-    base_model.trainable = False
+    if weight_backbone is not None:
+        base_model.load_weights(weight_backbone)
+        base_model.trainable = False
 
     pre = Model(base_model.layers[0].input, base_model.layers[0].output)
     backbone = Model(base_model.layers[1].input, base_model.layers[1].output)

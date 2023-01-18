@@ -1,7 +1,6 @@
 from dataset import load_data, load_data_test
 from create_models import get_model_tile
-from keras import layers, optimizers, losses, callbacks
-from keras import Sequential
+from keras import optimizers, losses, callbacks
 
 import tensorflow as tf
 
@@ -17,7 +16,7 @@ def get_args():
                         help='data folder contains train, valid, test dataset')
     parser.add_argument('cifar_weight',
                         help='pre-trained cifar model weight file')
-    parser.add_argument('--backbone', default=0, choices=(0, 1), type=int,
+    parser.add_argument('backbone', default=0, choices=(0, 1), type=int,
                         help='backbones [mobilenet, resnet50]')
     parser.add_argument('--data_shape', default=(64, 64, 3),
                         help='shape of each input data')
