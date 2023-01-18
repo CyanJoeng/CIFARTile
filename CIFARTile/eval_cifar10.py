@@ -11,7 +11,7 @@ def get_args():
             )
     parser.add_argument('checkpoint_file',
                         help='path to save the model file')
-    parser.add_argument('--backbone', default=0, choices=(0, 1), type=int,
+    parser.add_argument('backbone', default=0, choices=(0, 1), type=int,
                         help='backbones [mobilenet, resnet50]')
     parser.add_argument('--subsample', default=None, type=int,
                         help='subsample dataset for local processing')
