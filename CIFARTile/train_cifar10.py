@@ -41,7 +41,7 @@ if __name__ == "__main__":
         print("Load weights {} ...".format(args.checkpoint_file))
 
     log_file_name = '{}.training.log'.format(args.checkpoint_file)
-    checkpoint_file_name = args.checkpoint_file_name
+    checkpoint_file_name = args.checkpoint_file
     if not checkpoint_file_name.endswith('.hdf5'):
         checkpoint_file_name = checkpoint_file_name + '.hdf5'
 

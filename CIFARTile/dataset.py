@@ -69,18 +69,18 @@ def load_data_test(data_dir: str, subsample=None) -> Tuple[np.ndarray, np.ndarra
 
 
 def load_cifar10(subsample=None):
-    (x_train, y_train), (x_valid, y_valid) = datasets.cifar10.load_data()
+    (x_train, y_train), (x_test, y_test) = datasets.cifar10.load_data()
 
     if subsample:
-        x_train, y_train, x_valid, y_valid = subsample_dataset([x_train, y_train, x_valid, y_valid], subsample)
+        x_train, y_train, x_test, y_test = subsample_dataset([x_train, y_train, x_test, y_test], subsample)
 
-    test_idx = (np.arange(len(y_train)) % 5) == 0
+    valid_idx = (np.arange(len(y_train)) % 5) == 0
     train_idx = (np.arange(len(y_train)) % 5) != 0
 
-    x_test, y_test = x_train[test_idx], y_train[test_idx]
+    x_valid, y_valid = x_train[valid_idx], y_train[valid_idx]
     x_train, y_train = x_train[train_idx], y_train[train_idx]
     print("x_shape {}, y_shape {}".format(x_train.shape, y_train.shape))
-    print("        {},         {}".format(x_valid.shape, y_valid.shape))
     print("        {},         {}".format(x_test.shape, y_test.shape))
+    print("        {},         {}".format(x_valid.shape, y_valid.shape))
 
     return (x_train, y_train), (x_valid, y_valid), (x_test, y_test)
